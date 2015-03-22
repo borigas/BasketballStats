@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class PlayerStat : Stat
+    public class DbPlayer
     {
-        public Guid PlayerId { get; set; }
+        public Guid TeamId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
     }
 }

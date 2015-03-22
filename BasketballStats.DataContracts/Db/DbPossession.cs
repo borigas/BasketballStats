@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class TeamStat : Stat
+    public class DbPossession : DbGameEvent
     {
     }
 }

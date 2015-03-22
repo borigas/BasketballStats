@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class Lineup : GameEvent
+    public class Lineup : DbLineup
     {
-        public List<Guid> PlayerIds { get; set; }
     }
 }

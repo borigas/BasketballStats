@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class Game : DbGame
+    public class DbTeam : DbBase
     {
+        public string Name { get; set; }
+        public string HomeColor { get; set; }
+        public string AwayColor { get; set; }
     }
 }

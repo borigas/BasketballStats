@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class Stat : GameEvent
+    public class Stat : DbStat
     {
-        public Guid PossessionId { get; set; }
-        public Guid LineupId { get; set; }
-        public string StatName { get; set; }
-        public Guid StatEventLink { get; set; }
     }
 }

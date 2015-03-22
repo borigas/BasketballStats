@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class GameEvent : DbBase
+    public class DbGameEvent : DbBase
     {
         public Guid GameId { get; set; }
         public TimeSpan StartGameTime { get; set; }

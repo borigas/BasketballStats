@@ -37,18 +37,24 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbBase.cs" />
+    <Compile Include="Db\DbBase.cs" />
+    <Compile Include="Db\DbFoul.cs" />
+    <Compile Include="Db\DbGame.cs" />
+    <Compile Include="Db\DbGameEvent.cs" />
+    <Compile Include="Db\DbShot.cs" />
+    <Compile Include="Enum\ShotType.cs" />
+    <Compile Include="Db\DbLineup.cs" />
+    <Compile Include="Db\DbPlayer.cs" />
+    <Compile Include="Db\DbPossession.cs" />
     <Compile Include="Foul.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="GameEvent.cs" />
-    <Compile Include="Shot.cs" />
-    <Compile Include="ShotType.cs" />
-    <Compile Include="TeamStat.cs" />
     <Compile Include="Lineup.cs" />
     <Compile Include="Player.cs" />
-    <Compile Include="PlayerStat.cs" />
     <Compile Include="Possession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Db\DbStat.cs" />
+    <Compile Include="Db\DbTeam.cs" />
+    <Compile Include="Shot.cs" />
     <Compile Include="Stat.cs" />
     <Compile Include="Team.cs" />
   </ItemGroup>

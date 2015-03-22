@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class Shot : Stat
+    public class Shot : DbShot
     {
-        public bool IsMake { get; set; }
-        public ShotType ShotType { get; set; }
-        public double LocationX { get; set; }
-        public double LocationY { get; set; }
-        public double Distance { get; set; }
     }
 }
