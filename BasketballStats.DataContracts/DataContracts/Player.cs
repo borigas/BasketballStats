@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BasketballStats.Shared.DataContracts.Db;
 
-namespace BasketballStats.DataContracts
+namespace BasketballStats.Shared.DataContracts
 {
-    public class Possession : DbPlayer
+    public class Player : DbPlayer
     {
     }
 }

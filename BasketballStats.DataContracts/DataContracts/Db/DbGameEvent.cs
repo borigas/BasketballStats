@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BasketballStats.DataContracts
+namespace BasketballStats.Shared.DataContracts.Db
 {
     public class DbGameEvent : DbBase
     {

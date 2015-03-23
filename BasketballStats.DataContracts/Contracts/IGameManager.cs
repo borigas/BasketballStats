@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BasketballStats.DataContracts
+namespace BasketballStats.Shared.Contracts
 {
-    public class Foul : DbFoul
+    public interface IGameManager
     {
     }
 }
