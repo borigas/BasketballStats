@@ -11,6 +11,7 @@ namespace BasketballStats.Shared.DataContracts
     {
         public Possession Possession { get; set; }
         public Lineup Lineup { get; set; }
+        public Team Team { get; set; }
         public Player Player { get; set; }
     }
 }

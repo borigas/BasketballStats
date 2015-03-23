@@ -9,10 +9,10 @@ namespace BasketballStats.Shared.Contracts
 {
     public interface IGameManager
     {
-        StatResult<Stat> AddStat(Game game, Player player, string statName);
+        StatResult<Stat> AddStat(TeamGame game, Player player, string statName);
 
-        StatResult<Stat> AddDependentStat(Game game, Player player, string statName);
+        StatResult<Stat> AddDependentStat(TeamGame game, Player player, string statName);
 
-        StatResult<Shot> AddShot(Game game, Shot shot);
+        StatResult<Shot> AddShot(TeamGame game, Shot shot);
     }
 }

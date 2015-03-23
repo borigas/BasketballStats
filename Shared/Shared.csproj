@@ -53,10 +53,15 @@
     <Compile Include="DataContracts\Db\DbPossession.cs" />
     <Compile Include="DataContracts\Foul.cs" />
     <Compile Include="DataContracts\Game.cs" />
+    <Compile Include="DataContracts\Interfaces\IStatSummary.cs" />
     <Compile Include="DataContracts\Lineup.cs" />
     <Compile Include="DataContracts\Player.cs" />
+    <Compile Include="DataContracts\PlayerGame.cs" />
     <Compile Include="DataContracts\Possession.cs" />
+    <Compile Include="DataContracts\ShotTypeSummary.cs" />
     <Compile Include="DataContracts\StatResult.cs" />
+    <Compile Include="DataContracts\StatSummary.cs" />
+    <Compile Include="DataContracts\TeamGame.cs" />
     <Compile Include="Managers\GameManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataContracts\Db\DbStat.cs" />
