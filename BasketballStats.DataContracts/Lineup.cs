@@ -8,5 +8,6 @@ namespace BasketballStats.DataContracts
 {
     public class Lineup : DbLineup
     {
+        public Game Game { get; set; }
     }
 }

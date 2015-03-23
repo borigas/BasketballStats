@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.DataContracts
 {
-    public class DbPlayer
+    public class DbPlayer : DbBase
     {
         public Guid TeamId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public int Number { get; set; }
     }
 }

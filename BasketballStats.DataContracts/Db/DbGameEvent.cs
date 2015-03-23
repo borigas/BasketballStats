@@ -9,6 +9,7 @@ namespace BasketballStats.DataContracts
     public class DbGameEvent : DbBase
     {
         public Guid GameId { get; set; }
+        public Guid TeamId { get; set; }
         public TimeSpan StartGameTime { get; set; }
         public TimeSpan EndGameTime { get; set; }
         public DateTime StartDateTime { get; set; }
