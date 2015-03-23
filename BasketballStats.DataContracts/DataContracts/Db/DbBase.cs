@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace BasketballStats.Shared.DataContracts
+namespace BasketballStats.Shared.DataContracts.Db
 {
     public class DbBase
     {

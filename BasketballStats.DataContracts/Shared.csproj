@@ -35,29 +35,35 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <Folder Include="DataContracts\" />
+    <Folder Include="Accessors\" />
+    <Folder Include="Common\" />
+    <Folder Include="Engines\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contracts\Db\DbBase.cs" />
-    <Compile Include="Contracts\Db\DbFoul.cs" />
-    <Compile Include="Contracts\Db\DbGame.cs" />
-    <Compile Include="Contracts\Db\DbGameEvent.cs" />
-    <Compile Include="Contracts\Db\DbShot.cs" />
-    <Compile Include="Contracts\Enum\ShotType.cs" />
-    <Compile Include="Contracts\Db\DbLineup.cs" />
-    <Compile Include="Contracts\Db\DbPlayer.cs" />
-    <Compile Include="Contracts\Db\DbPossession.cs" />
-    <Compile Include="Contracts\Foul.cs" />
-    <Compile Include="Contracts\Game.cs" />
-    <Compile Include="Contracts\Lineup.cs" />
-    <Compile Include="Contracts\Player.cs" />
-    <Compile Include="Contracts\Possession.cs" />
+    <Compile Include="Contracts\IGameManager.cs" />
+    <Compile Include="DataContracts\Db\DbBase.cs" />
+    <Compile Include="DataContracts\Db\DbFoul.cs" />
+    <Compile Include="DataContracts\Db\DbGame.cs" />
+    <Compile Include="DataContracts\Db\DbGameEvent.cs" />
+    <Compile Include="DataContracts\Db\DbShot.cs" />
+    <Compile Include="DataContracts\Db\StatType.cs" />
+    <Compile Include="DataContracts\Enum\ShotType.cs" />
+    <Compile Include="DataContracts\Db\DbLineup.cs" />
+    <Compile Include="DataContracts\Db\DbPlayer.cs" />
+    <Compile Include="DataContracts\Db\DbPossession.cs" />
+    <Compile Include="DataContracts\Foul.cs" />
+    <Compile Include="DataContracts\Game.cs" />
+    <Compile Include="DataContracts\Lineup.cs" />
+    <Compile Include="DataContracts\Player.cs" />
+    <Compile Include="DataContracts\Possession.cs" />
+    <Compile Include="DataContracts\StatResult.cs" />
+    <Compile Include="Managers\GameManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Contracts\Db\DbStat.cs" />
-    <Compile Include="Contracts\Db\DbTeam.cs" />
-    <Compile Include="Contracts\Shot.cs" />
-    <Compile Include="Contracts\Stat.cs" />
-    <Compile Include="Contracts\Team.cs" />
+    <Compile Include="DataContracts\Db\DbStat.cs" />
+    <Compile Include="DataContracts\Db\DbTeam.cs" />
+    <Compile Include="DataContracts\Shot.cs" />
+    <Compile Include="DataContracts\Stat.cs" />
+    <Compile Include="DataContracts\Team.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
