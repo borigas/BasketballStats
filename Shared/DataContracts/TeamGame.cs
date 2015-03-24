@@ -11,6 +11,7 @@ namespace BasketballStats.Shared.DataContracts
     {
         public Team Team { get; set; }
         public Game Game { get; set; }
+        public List<Lineup> Lineups { get; set; }
         public List<PlayerGame> Players { get; set; }
 
         public List<StatSummary> StatSummary { get; set; }

@@ -45,6 +45,7 @@
     <Compile Include="DataContracts\Db\DbFoul.cs" />
     <Compile Include="DataContracts\Db\DbGame.cs" />
     <Compile Include="DataContracts\Db\DbGameEvent.cs" />
+    <Compile Include="DataContracts\Db\DbSeason.cs" />
     <Compile Include="DataContracts\Db\DbShot.cs" />
     <Compile Include="DataContracts\Db\StatType.cs" />
     <Compile Include="DataContracts\Enum\ShotType.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="DataContracts\Player.cs" />
     <Compile Include="DataContracts\PlayerGame.cs" />
     <Compile Include="DataContracts\Possession.cs" />
+    <Compile Include="DataContracts\Season.cs" />
     <Compile Include="DataContracts\ShotTypeSummary.cs" />
     <Compile Include="DataContracts\StatResult.cs" />
     <Compile Include="DataContracts\StatSummary.cs" />

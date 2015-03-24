@@ -7,10 +7,8 @@ using BasketballStats.Shared.DataContracts.Db;
 
 namespace BasketballStats.Shared.DataContracts
 {
-    public class Lineup : DbLineup
+    public class Season : DbSeason
     {
-        public Game Game { get; set; }
-        public Team Team { get; set; }
-        public List<Player> Players { get; set; }
+        public List<Game> Games { get; set; }
     }
 }

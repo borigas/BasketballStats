@@ -9,5 +9,6 @@ namespace BasketballStats.Shared.DataContracts
 {
     public class Team : DbTeam
     {
+        public List<Player> Players { get; set; }
     }
 }
