@@ -16,6 +16,7 @@ namespace UnitTests
         Team _homeTeam = null;
         Team _awayTeam = null;
         Season _season = null;
+        Game _game = null;
 
         [TestInitialize]
         public void TestInit()
@@ -46,26 +47,25 @@ namespace UnitTests
             {
                 Name = "Test Season",
             };
+            _game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam);
         }
 
         [TestMethod]
         public void GameManager_CreateGame()
         {
-            Game game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam);
+            Assert.IsNotNull(_game);
 
-            Assert.IsNotNull(game);
+            Assert.AreEqual(_homeTeam.Id, _game.HomeTeamId);
+            InspectTeamGame(_game, _game.HomeTeam, _homeTeam);
+            Assert.AreEqual(_awayTeam.Id, _game.AwayTeamId);
+            InspectTeamGame(_game, _game.AwayTeam, _awayTeam);
 
-            Assert.AreEqual(_homeTeam.Id, game.HomeTeamId);
-            InspectTeamGame(game, game.HomeTeam, _homeTeam);
-            Assert.AreEqual(_awayTeam.Id, game.AwayTeamId);
-            InspectTeamGame(game, game.AwayTeam, _awayTeam);
+            Assert.AreEqual(_season, _game.Season);
+            Assert.AreEqual(_season.Id, _game.SeasonId);
 
-            Assert.AreEqual(_season, game.Season);
-            Assert.AreEqual(_season.Id, game.SeasonId);
-
-            Assert.IsNotNull(game.Possessions);
-            Assert.IsNotNull(game.Shots);
-            Assert.IsNotNull(game.Stats);
+            Assert.IsNotNull(_game.Possessions);
+            Assert.IsNotNull(_game.Shots);
+            Assert.IsNotNull(_game.Stats);
         }
 
         private void InspectTeamGame(Game game, TeamGame teamGame, Team team)
@@ -94,6 +94,53 @@ namespace UnitTests
         [TestMethod]
         public void GameManager_AssignLineup()
         {
+            // Assign 1st lineup
+            var players = _awayTeam.Players.GetRange(2, 5);
+            Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+
+            Assert.IsNotNull(lineup);
+            Assert.IsTrue(players.SequenceEqual(lineup.Players));
+            Assert.AreEqual(_awayTeam, lineup.Team);
+            Assert.AreEqual(_game, lineup.Game);
+
+            Assert.IsNotNull(_game.AwayTeam.Lineups);
+            Assert.AreEqual(1, _game.AwayTeam.Lineups.Count);
+            Assert.AreEqual(lineup, _game.AwayTeam.Lineups.Last());
+
+            // Assign 2nd lineup
+            players = _awayTeam.Players.GetRange(0, 5);
+            lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+
+            Assert.IsNotNull(lineup);
+            Assert.IsTrue(players.SequenceEqual(lineup.Players));
+            Assert.AreEqual(_awayTeam, lineup.Team);
+
+            Assert.IsNotNull(_game.AwayTeam.Lineups);
+            Assert.AreEqual(2, _game.AwayTeam.Lineups.Count);
+            Assert.AreEqual(lineup, _game.AwayTeam.Lineups.Last());
+
+            Assert.AreEqual(0, _game.HomeTeam.Lineups.Count, "Home team lineups should not be affected by away team");
+        }
+
+        [TestMethod]
+        public void GameManager_AssignLineup_TooFewPlayers()
+        {
+            // Too few players is allowed. Sometimes teams run out of players
+
+            var players = _game.AwayTeam.Team.Players.GetRange(0, 4);
+            Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+
+            Assert.IsNotNull(lineup);
+            Assert.IsTrue(players.SequenceEqual(lineup.Players));
+            Assert.AreEqual(_awayTeam, lineup.Team);
+        }
+
+        [ExpectedException(typeof(ArgumentException))]
+        [TestMethod]
+        public void GameManager_AssignLineup_TooManyPlayers()
+        {
+            var players = _game.AwayTeam.Team.Players.GetRange(0, 6);
+            Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
         }
     }
 }

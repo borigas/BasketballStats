@@ -54,7 +54,20 @@ namespace BasketballStats.Shared.Managers
 
         public Lineup AssignLineup(TeamGame teamGame, List<Player> players)
         {
-            throw new NotImplementedException();
+            const int playersInAFullLineup = 5;
+            if (players.Count > playersInAFullLineup)
+            {
+                throw new ArgumentException("players");
+            }
+
+            Lineup lineup = new Lineup()
+            {
+                Game= teamGame.Game,
+                Players = players,
+                Team = teamGame.Team,
+            };
+            teamGame.Lineups.Add(lineup);
+            return lineup;
         }
 
         public StatResult<Stat> AddStat(TeamGame game, Player player, string statName)
