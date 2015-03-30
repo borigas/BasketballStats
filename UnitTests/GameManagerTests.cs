@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
 using BasketballStats.Shared.Managers;
@@ -11,11 +12,15 @@ namespace UnitTests
     [TestClass]
     public class GameManagerTests
     {
+        const int MS_TO_SLEEP = 50;
+        const int MS_ALLOWABLE_DIFF = 10;
+
         IGameManager _gameManager = null;
 
         Team _homeTeam = null;
         Team _awayTeam = null;
         Season _season = null;
+        GameSettings _gameSettings = null;
         Game _game = null;
 
         [TestInitialize]
@@ -47,7 +52,12 @@ namespace UnitTests
             {
                 Name = "Test Season",
             };
-            _game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam);
+            _gameSettings = new GameSettings()
+            {
+                PeriodLengthInMinutes = 8,
+                PeriodsInGame = 4,
+            };
+            _game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam, _gameSettings);
         }
 
         [TestMethod]
@@ -66,6 +76,13 @@ namespace UnitTests
             Assert.IsNotNull(_game.Possessions);
             Assert.IsNotNull(_game.Shots);
             Assert.IsNotNull(_game.Stats);
+
+            Assert.IsNotNull(_game.GameSettings);
+            Assert.AreEqual(_gameSettings, _game.GameSettings);
+
+            Assert.IsNotNull(_game.GameClock);
+            Assert.AreEqual(false, _game.GameClock.IsClockRunning);
+            Assert.AreEqual(TimeSpan.Zero, _game.GameClock.EllapsedTimeAtLastClockStop);
         }
 
         private void InspectTeamGame(Game game, TeamGame teamGame, Team team)
@@ -141,6 +158,56 @@ namespace UnitTests
         {
             var players = _game.AwayTeam.Team.Players.GetRange(0, 6);
             Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+        }
+
+        [TestMethod]
+        public void GameManager_StartStopTime()
+        {
+            Assert.AreEqual(TimeSpan.Zero, _gameManager.GetEllapsedTime(_game));
+
+            _gameManager.StartClock(_game);
+
+            Thread.Sleep(MS_TO_SLEEP);
+
+            TimeSpan ellapsedTime1 = _gameManager.GetEllapsedTime(_game);
+            Assert.AreEqual(MS_TO_SLEEP, ellapsedTime1.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+
+            Thread.Sleep(MS_TO_SLEEP);
+
+            TimeSpan ellapsedTime2 = _gameManager.GetEllapsedTime(_game);
+            Assert.AreEqual(MS_TO_SLEEP + ellapsedTime1.TotalMilliseconds, ellapsedTime2.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+
+            _gameManager.StopClock(_game);
+
+            Thread.Sleep(MS_TO_SLEEP);
+
+            TimeSpan ellapsedTime3 = _gameManager.GetEllapsedTime(_game);
+            Assert.AreEqual(ellapsedTime2.TotalMilliseconds, ellapsedTime3.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+        }
+
+        [TestMethod]
+        public void GameManager_SetTime()
+        {
+            TimeSpan timeToSet = TimeSpan.FromMinutes(1);
+            _gameManager.SetEllapsedTime(_game, timeToSet);
+
+            Thread.Sleep(MS_TO_SLEEP);
+
+            Assert.AreEqual(timeToSet, _gameManager.GetEllapsedTime(_game));
+
+            _gameManager.StartClock(_game);
+
+            Thread.Sleep(MS_TO_SLEEP);
+
+            Assert.AreEqual(timeToSet.TotalMilliseconds + MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
+
+            _gameManager.SetEllapsedTime(_game, timeToSet);
+
+            Assert.AreEqual(timeToSet.TotalMilliseconds, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
+
+            Thread.Sleep(2 * MS_TO_SLEEP);
+
+            Assert.AreEqual(timeToSet.TotalMilliseconds + 2 * MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
         }
     }
 }

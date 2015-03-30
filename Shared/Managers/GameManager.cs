@@ -10,7 +10,7 @@ namespace BasketballStats.Shared.Managers
 {
     public class GameManager : IGameManager
     {
-        public Game CreateGame(Season season, Team homeTeam, Team awayTeam)
+        public Game CreateGame(Season season, Team homeTeam, Team awayTeam, GameSettings gameSettings)
         {
             Game game = new Game()
             {
@@ -20,10 +20,19 @@ namespace BasketballStats.Shared.Managers
 
                 SeasonId = season.Id,
                 Season = season,
+
+                GameSettings = gameSettings,
             };
 
             game.HomeTeam = CreateTeamGame(homeTeam, game);
             game.AwayTeam = CreateTeamGame(awayTeam, game);
+
+            game.GameClock = new GameClock()
+            {
+                IsClockRunning = false,
+                EllapsedTimeAtLastClockStop = TimeSpan.Zero,
+                LastClockStartTime = DateTime.UtcNow,
+            };
 
             return game;
         }
@@ -62,7 +71,7 @@ namespace BasketballStats.Shared.Managers
 
             Lineup lineup = new Lineup()
             {
-                Game= teamGame.Game,
+                Game = teamGame.Game,
                 Players = players,
                 Team = teamGame.Team,
             };
@@ -83,6 +92,37 @@ namespace BasketballStats.Shared.Managers
         public StatResult<Shot> AddShot(TeamGame game, Shot shot)
         {
             throw new NotImplementedException();
+        }
+
+        public void StartClock(Game game)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            game.GameClock.IsClockRunning = true;
+            game.GameClock.LastClockStartTime = now;
+        }
+
+        public void StopClock(Game game)
+        {
+            game.GameClock.EllapsedTimeAtLastClockStop = GetEllapsedTime(game);
+            game.GameClock.IsClockRunning = false;
+        }
+
+        public TimeSpan GetEllapsedTime(Game game)
+        {
+            TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
+            if (game.GameClock.IsClockRunning)
+            {
+                var runningTime = DateTime.UtcNow - game.GameClock.LastClockStartTime;
+                ellapsedTime += runningTime;
+            }
+            return ellapsedTime;
+        }
+
+        public void SetEllapsedTime(Game game, TimeSpan timeSpan)
+        {
+            game.GameClock.LastClockStartTime = DateTime.UtcNow;
+            game.GameClock.EllapsedTimeAtLastClockStop = timeSpan;
         }
     }
 }

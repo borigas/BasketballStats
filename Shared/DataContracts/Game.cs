@@ -9,11 +9,13 @@ namespace BasketballStats.Shared.DataContracts
 {
     public class Game : DbGame
     {
+        public GameSettings GameSettings { get; set; }
         public Season Season { get; set; }
         public TeamGame HomeTeam { get; set; }
         public TeamGame AwayTeam { get; set; }
         public List<Possession> Possessions { get; set; }
         public List<Shot> Shots { get; set; }
         public List<Stat> Stats { get; set; }
+        public GameClock GameClock { get; set; }
     }
 }
