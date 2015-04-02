@@ -113,28 +113,45 @@ namespace UnitTests
         {
             // Assign 1st lineup
             var players = _awayTeam.Players.GetRange(2, 5);
-            Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+            DateTime now1 = DateTime.UtcNow;
+            Lineup lineup1 = _gameManager.AssignLineup(_game.AwayTeam, players);
 
-            Assert.IsNotNull(lineup);
-            Assert.IsTrue(players.SequenceEqual(lineup.Players));
-            Assert.AreEqual(_awayTeam, lineup.Team);
-            Assert.AreEqual(_game, lineup.Game);
+            Assert.IsNotNull(lineup1);
+            Assert.IsTrue(players.SequenceEqual(lineup1.Players));
+            Assert.AreEqual(_awayTeam, lineup1.Team);
+            Assert.AreEqual(_game, lineup1.Game);
+            Assert.IsTrue((lineup1.StartDateTime - now1).TotalMilliseconds < MS_ALLOWABLE_DIFF);
+            Assert.IsTrue((lineup1.EndDateTime - now1).TotalMilliseconds < MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(TimeSpan.Zero, lineup1.StartGameTime);
 
             Assert.IsNotNull(_game.AwayTeam.Lineups);
             Assert.AreEqual(1, _game.AwayTeam.Lineups.Count);
-            Assert.AreEqual(lineup, _game.AwayTeam.Lineups.Last());
+            Assert.AreEqual(lineup1, _game.AwayTeam.Lineups.Last());
+
+            _gameManager.StartClock(_game);
+            Thread.Sleep(MS_TO_SLEEP);
+            _gameManager.StopClock(_game);
 
             // Assign 2nd lineup
+            DateTime now2 = DateTime.UtcNow;
             players = _awayTeam.Players.GetRange(0, 5);
-            lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
+            Lineup lineup2 = _gameManager.AssignLineup(_game.AwayTeam, players);
 
-            Assert.IsNotNull(lineup);
-            Assert.IsTrue(players.SequenceEqual(lineup.Players));
-            Assert.AreEqual(_awayTeam, lineup.Team);
+            Assert.IsNotNull(lineup2);
+            Assert.IsTrue(players.SequenceEqual(lineup2.Players));
+            Assert.AreEqual(_awayTeam, lineup2.Team);
+            Assert.AreEqual(_game, lineup2.Game);
+
+            Assert.IsTrue((lineup2.StartDateTime - now2).TotalMilliseconds < MS_ALLOWABLE_DIFF);
+            Assert.IsTrue((lineup2.EndDateTime - now2).TotalMilliseconds < MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(MS_TO_SLEEP, lineup2.StartGameTime.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+
+            Assert.AreEqual(lineup2.StartGameTime, lineup1.EndGameTime);
+            Assert.AreEqual(lineup2.StartDateTime, lineup1.EndDateTime);
 
             Assert.IsNotNull(_game.AwayTeam.Lineups);
             Assert.AreEqual(2, _game.AwayTeam.Lineups.Count);
-            Assert.AreEqual(lineup, _game.AwayTeam.Lineups.Last());
+            Assert.AreEqual(lineup2, _game.AwayTeam.Lineups.Last());
 
             Assert.AreEqual(0, _game.HomeTeam.Lineups.Count, "Home team lineups should not be affected by away team");
         }

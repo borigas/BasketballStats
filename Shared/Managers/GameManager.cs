@@ -69,12 +69,27 @@ namespace BasketballStats.Shared.Managers
                 throw new ArgumentException("players");
             }
 
+            DateTime now = DateTime.UtcNow;
+            TimeSpan gameTime=GetEllapsedTime(teamGame.Game);
+
             Lineup lineup = new Lineup()
             {
                 Game = teamGame.Game,
                 Players = players,
                 Team = teamGame.Team,
+                StartDateTime = now,
+                StartGameTime = gameTime,
+                EndDateTime = now,
+                EndGameTime = gameTime,
             };
+
+            Lineup oldLineup = teamGame.Lineups.LastOrDefault();
+            if (oldLineup != null)
+            {
+                oldLineup.EndDateTime = now;
+                oldLineup.EndGameTime = gameTime;
+            }
+
             teamGame.Lineups.Add(lineup);
             return lineup;
         }
