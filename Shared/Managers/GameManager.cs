@@ -72,7 +72,7 @@ namespace BasketballStats.Shared.Managers
             }
 
             DateTime now = Settings.CurrentTime;
-            TimeSpan gameTime=GetEllapsedTime(teamGame.Game);
+            TimeSpan gameTime = GetEllapsedTime(teamGame.Game);
 
             Lineup lineup = new Lineup()
             {
@@ -114,7 +114,7 @@ namespace BasketballStats.Shared.Managers
                 EndDateTime = now,
                 StartGameTime = gameTime,
                 EndGameTime = gameTime,
-                
+
             };
             return gameEvent;
         }
@@ -123,7 +123,7 @@ namespace BasketballStats.Shared.Managers
         {
             Stat stat = new Stat()
             {
-                
+
             };
             throw new NotImplementedException();
         }
@@ -152,13 +152,40 @@ namespace BasketballStats.Shared.Managers
             game.GameClock.IsClockRunning = false;
         }
 
+        public GameTime GetGameTime(Game game)
+        {
+            TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
+            if (game.GameClock.IsClockRunning)
+            {
+                //int lastStopPeriod = 
+                //GetPeriodNumber(game.GameClock.EllapsedTimeAtLastClockStop, game.GameSettings);
+
+                //throw new NotImplementedException();
+                //TimeSpan maxEllapsedTime = (lastStopPeriod + 1);
+
+                var runningTime = Settings.CurrentTime - game.GameClock.LastClockStartTime;
+                ellapsedTime += runningTime;
+            }
+            return new GameTime();
+        }
+
+        public void SetGameTime(Game game, GameTime gameTime)
+        {
+
+        }
+
+        public void AdvancePeriod(Game game)
+        {
+
+        }
+
         public TimeSpan GetEllapsedTime(Game game)
         {
             TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
             if (game.GameClock.IsClockRunning)
             {
                 //int lastStopPeriod = 
-                    //GetPeriodNumber(game.GameClock.EllapsedTimeAtLastClockStop, game.GameSettings);
+                //GetPeriodNumber(game.GameClock.EllapsedTimeAtLastClockStop, game.GameSettings);
 
                 //throw new NotImplementedException();
                 //TimeSpan maxEllapsedTime = (lastStopPeriod + 1);
@@ -175,8 +202,9 @@ namespace BasketballStats.Shared.Managers
             game.GameClock.EllapsedTimeAtLastClockStop = timeSpan;
         }
 
-        public int GetPeriodNumber(TimeSpan ellapsedTime, GameSettings gameSettings){
-            double period = ellapsedTime.TotalMilliseconds / gameSettings.PeriodLength.TotalMilliseconds;
+        private int GetPeriodNumber(TimeSpan ellapsedTime, GameSettings gameSettings)
+        {
+            double period = ellapsedTime.TotalMilliseconds / gameSettings.RegulationPeriodLength.TotalMilliseconds;
             return (int)period;
         }
     }

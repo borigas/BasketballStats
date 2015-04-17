@@ -9,7 +9,7 @@ namespace BasketballStats.Shared.DataContracts
     public class GameSettings
     {
         public int PeriodsInGame { get; set; }
-        public TimeSpan PeriodLength { get; set; }
+        public TimeSpan RegulationPeriodLength { get; set; }
         public TimeSpan ExtraPeriodLength { get; set; }
     }
 }
