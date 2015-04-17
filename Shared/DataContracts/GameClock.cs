@@ -9,7 +9,7 @@ namespace BasketballStats.Shared.DataContracts
     public class GameClock
     {
         public bool IsClockRunning { get; set; }
-        public TimeSpan EllapsedTimeAtLastClockStop{ get; set; }
+        public TimeSpan EllapsedPeriodTimeAtLastClockStop{ get; set; }
         public DateTime LastClockStartTime { get; set; }
         public int PeriodIndex { get; set; }
     }

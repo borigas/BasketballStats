@@ -56,7 +56,8 @@ namespace UnitTests
             _gameSettings = new GameSettings()
             {
                 RegulationPeriodLength = TimeSpan.FromMinutes(8),
-                PeriodsInGame = 4,
+                ExtraPeriodLength = TimeSpan.FromMinutes(4),
+                RegulationPeriodsInGame = 4,
             };
             _game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam, _gameSettings);
         }
@@ -83,7 +84,7 @@ namespace UnitTests
 
             Assert.IsNotNull(_game.GameClock);
             Assert.AreEqual(false, _game.GameClock.IsClockRunning);
-            Assert.AreEqual(TimeSpan.Zero, _game.GameClock.EllapsedTimeAtLastClockStop);
+            Assert.AreEqual(TimeSpan.Zero, _game.GameClock.EllapsedPeriodTimeAtLastClockStop);
         }
 
         private void InspectTeamGame(Game game, TeamGame teamGame, Team team)
@@ -189,135 +190,63 @@ namespace UnitTests
             {
                 string periodName = periodNames[periodIndex];
                 bool isRegulationPeriod = isRegulationPeriods[periodIndex];
+                TimeSpan currentPeriodLength = isRegulationPeriod ? _gameSettings.RegulationPeriodLength : _game.GameSettings.ExtraPeriodLength;
                 TimeSpan timeEllapsedBeforePeriod = TimeSpan.Zero;
                 for (var j = 0; j < periodIndex; j++)
                 {
-                    timeEllapsedBeforePeriod += isRegulationPeriod ? _game.GameSettings.RegulationPeriodLength : _game.GameSettings.ExtraPeriodLength;
+                    timeEllapsedBeforePeriod += isRegulationPeriods[j] ? _game.GameSettings.RegulationPeriodLength : _game.GameSettings.ExtraPeriodLength;
+                }
+
+                if (periodIndex > 0)
+                {
+                    // Move into the current period
+                    _gameManager.AdvancePeriod(_game);
                 }
 
                 // Clock hasn't started for the period yet. It is full
                 GameTime gameTime = _gameManager.GetGameTime(_game);
                 TimeSpan expectedPeriodEllapsedTime = TimeSpan.Zero;
                 bool isClockRunning = false;
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
 
-                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod)
+                // Clock still full. No time has ellapsed. Clock started
+                _gameManager.StartClock(_game);
+                gameTime = _gameManager.GetGameTime(_game);
+                isClockRunning = true;
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
 
-                
+                // Run the clock down to a minute. Clock still running
+                TimeSpan quarterRemainingTime = TimeSpan.FromMinutes(1);
+                expectedPeriodEllapsedTime = currentPeriodLength.Subtract(quarterRemainingTime);
+                Settings.CurrentTime = Settings.CurrentTime.Add(expectedPeriodEllapsedTime);
+                gameTime = _gameManager.GetGameTime(_game);
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
+
+                // Clock stopped. Time should be same as last check. Clock not running now
+                _gameManager.StopClock(_game);
+                gameTime = _gameManager.GetGameTime(_game);
+                isClockRunning = false;
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
+
+                // Clock shouldn't move when stopped
+                Settings.CurrentTime = Settings.CurrentTime.AddHours(1);
+                gameTime = _gameManager.GetGameTime(_game);
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
+
+
+                // Start clock and run down to 0
+                _gameManager.StartClock(_game);
+                Settings.CurrentTime = Settings.CurrentTime.Add(quarterRemainingTime);
+                expectedPeriodEllapsedTime = currentPeriodLength;
+                isClockRunning = true;
+                gameTime = _gameManager.GetGameTime(_game);
+                CheckGameTime(gameTime, isClockRunning, expectedPeriodEllapsedTime, _game.GameSettings, timeEllapsedBeforePeriod, periodIndex, periodName, isRegulationPeriod);
+
+                // Clock will not continue past 0 in each quarter
+                Settings.CurrentTime = Settings.CurrentTime.AddHours(1);
+                gameTime = _gameManager.GetGameTime(_game);
+                isClockRunning = false;
             }
-
-            // Clock is full and not started
-            GameTime gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(TimeSpan.Zero, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(TimeSpan.Zero, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-
-
-
-
-
-            // Clock is full and not started
-            GameTime gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(TimeSpan.Zero, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(TimeSpan.Zero, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-            // Clock still full. No time has ellapsed. Clock started
-            _gameManager.StartClock(_game);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(TimeSpan.Zero, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(TimeSpan.Zero, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(true, gameTime.IsClockRunning);
-
-            // Run the clock down to a minute. Clock still running
-            TimeSpan quarterRemainingTime = TimeSpan.FromMinutes(1);
-            TimeSpan timeToRun = _game.GameSettings.RegulationPeriodLength.Subtract(quarterRemainingTime);
-            Settings.CurrentTime = Settings.CurrentTime.Add(timeToRun);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(timeToRun, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(timeToRun, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(true, gameTime.IsClockRunning);
-
-            // Clock stopped. Time should be same as last check. Clock not running now
-            _gameManager.StopClock(_game);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(timeToRun, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(timeToRun, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-            // Clock shouldn't move when stopped
-            Settings.CurrentTime = Settings.CurrentTime.AddHours(1);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(timeToRun, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(timeToRun, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-            // Start clock and run down to 0
-            _gameManager.StartClock(_game);
-            quarterRemainingTime = TimeSpan.Zero;
-            Settings.CurrentTime = Settings.CurrentTime.Add(quarterRemainingTime);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-            // Clock will not continue past 0 in each quarter
-            Settings.CurrentTime = Settings.CurrentTime.AddHours(1);
-            gameTime = _gameManager.GetGameTime(_game);
-
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime); ;
-            Assert.AreEqual(0, gameTime.PeriodIndex);
-            Assert.AreEqual("1st", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
-
-            // Set clock for 2nd quarter
-            _gameManager.AdvancePeriod(_game);
-
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.TotalEllapsedTime);
-            Assert.AreEqual(_game.GameSettings.RegulationPeriodLength, gameTime.PeriodEllapsedTime);
-            Assert.AreEqual(quarterRemainingTime, gameTime.PeriodRemainingTime);
-            Assert.AreEqual(1, gameTime.PeriodIndex);
-            Assert.AreEqual("2nd", gameTime.PeriodName);
-            Assert.AreEqual(true, gameTime.IsRegulationPeriod);
-            Assert.AreEqual(false, gameTime.IsClockRunning);
         }
 
         private void CheckGameTime(GameTime gameTime, bool expectedIsClockRunning, TimeSpan expectedPeriodEllapsedTime, GameSettings gameSettings, TimeSpan timeEllapsedBeforePeriod, int expectedPeriodIndex, string expectedPeriodName, bool expectedIsRegulationPeriod)
@@ -335,12 +264,6 @@ namespace UnitTests
             Assert.AreEqual(expectedPeriodName, gameTime.PeriodName);
             Assert.AreEqual(expectedIsRegulationPeriod, gameTime.IsRegulationPeriod);
             Assert.AreEqual(expectedIsClockRunning, gameTime.IsClockRunning);
-        }
-
-        [TestMethod]
-        public void GameManager_StartStopTime_ClockStopsAtPeriodEnd()
-        {
-
         }
 
         [TestMethod]

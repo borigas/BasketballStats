@@ -32,7 +32,7 @@ namespace BasketballStats.Shared.Managers
             game.GameClock = new GameClock()
             {
                 IsClockRunning = false,
-                EllapsedTimeAtLastClockStop = TimeSpan.Zero,
+                EllapsedPeriodTimeAtLastClockStop = TimeSpan.Zero,
                 LastClockStartTime = Settings.CurrentTime,
             };
 
@@ -72,7 +72,7 @@ namespace BasketballStats.Shared.Managers
             }
 
             DateTime now = Settings.CurrentTime;
-            TimeSpan gameTime = GetEllapsedTime(teamGame.Game);
+            TimeSpan gameTime = GetGameTime(teamGame.Game).TotalEllapsedTime;
 
             Lineup lineup = new Lineup()
             {
@@ -148,40 +148,123 @@ namespace BasketballStats.Shared.Managers
 
         public void StopClock(Game game)
         {
-            game.GameClock.EllapsedTimeAtLastClockStop = GetEllapsedTime(game);
+            var gameTime = GetGameTime(game);
+            game.GameClock.EllapsedPeriodTimeAtLastClockStop = gameTime.PeriodEllapsedTime;
             game.GameClock.IsClockRunning = false;
         }
 
+        [Obsolete("Move clock functions to a GameClockEngine")]
         public GameTime GetGameTime(Game game)
         {
-            TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
-            if (game.GameClock.IsClockRunning)
+            bool isClockRunning = game.GameClock.IsClockRunning;
+            TimeSpan periodEllapsedTime = game.GameClock.EllapsedPeriodTimeAtLastClockStop;
+            if (isClockRunning)
             {
-                //int lastStopPeriod = 
-                //GetPeriodNumber(game.GameClock.EllapsedTimeAtLastClockStop, game.GameSettings);
-
-                //throw new NotImplementedException();
-                //TimeSpan maxEllapsedTime = (lastStopPeriod + 1);
-
                 var runningTime = Settings.CurrentTime - game.GameClock.LastClockStartTime;
-                ellapsedTime += runningTime;
+                periodEllapsedTime += runningTime;
             }
-            return new GameTime();
+
+            TimeSpan periodLength = GetCurrentPeriodLength(game);
+            if (periodEllapsedTime > periodLength)
+            {
+                // The period clock has expired. Stop the clock
+                isClockRunning = false;
+                periodEllapsedTime = periodLength;
+            }
+
+            TimeSpan totalEllapsedTime = periodEllapsedTime;
+            for (int previousPeriodIndex = 0; previousPeriodIndex < game.GameClock.PeriodIndex; previousPeriodIndex++)
+            {
+                totalEllapsedTime += GetPeriodLength(game, previousPeriodIndex);
+            }
+
+            TimeSpan periodRemainingTime = periodLength - periodEllapsedTime;
+            int periodIndex = game.GameClock.PeriodIndex;
+            string periodName = GetPeriodName(game);
+            bool isRegulationPeriod = IsRegulationPeriod(game, periodIndex);
+            return new GameTime()
+            {
+                IsClockRunning = isClockRunning,
+                IsRegulationPeriod = isRegulationPeriod,
+                PeriodEllapsedTime = periodEllapsedTime,
+                PeriodIndex = periodIndex,
+                PeriodName = periodName,
+                PeriodRemainingTime = periodRemainingTime,
+                TotalEllapsedTime = totalEllapsedTime,
+            };
+        }
+
+        private string GetPeriodName(Game game)
+        {
+            int periodIndex = game.GameClock.PeriodIndex;
+            int periodCount = periodIndex + 1;
+            bool isRegulationPeriod = IsRegulationPeriod(game, periodIndex);
+
+            if (isRegulationPeriod)
+            {
+                string[] specialRegulationPeriodNames = new string[] { "1st", "2nd", "3rd" };
+                if (periodIndex < specialRegulationPeriodNames.Length)
+                {
+                    return specialRegulationPeriodNames[periodIndex];
+                }
+                else
+                {
+                    return periodCount.ToString() + "th";
+                }
+            }
+            else
+            {
+                int extraPeriodCount = periodCount - game.GameSettings.RegulationPeriodsInGame;
+                string overtimeCounterPrefix = string.Empty;
+                if (extraPeriodCount > 1)
+                {
+                    overtimeCounterPrefix = extraPeriodCount.ToString();
+                }
+                return overtimeCounterPrefix + "OT";
+            }
+        }
+
+        private bool IsRegulationPeriod(Game game, int periodIndex)
+        {
+            int periodCount = periodIndex + 1;
+            int regulationPeriods = game.GameSettings.RegulationPeriodsInGame;
+            return periodCount <= regulationPeriods;
+        }
+
+        private TimeSpan GetCurrentPeriodLength(Game game)
+        {
+            return GetPeriodLength(game, game.GameClock.PeriodIndex);
+        }
+
+        private TimeSpan GetPeriodLength(Game game, int periodIndex)
+        {
+            bool isRegulationPeriod = IsRegulationPeriod(game, periodIndex);
+            if (isRegulationPeriod)
+            {
+                return game.GameSettings.RegulationPeriodLength;
+            }
+            else
+            {
+                return game.GameSettings.ExtraPeriodLength;
+            }
         }
 
         public void SetGameTime(Game game, GameTime gameTime)
         {
-
+            throw new NotImplementedException();
         }
 
         public void AdvancePeriod(Game game)
         {
-
+            game.GameClock.IsClockRunning = false;
+            game.GameClock.EllapsedPeriodTimeAtLastClockStop = TimeSpan.Zero;
+            game.GameClock.PeriodIndex++;
         }
 
+        [Obsolete("Remove this from interface after the tests are updated")]
         public TimeSpan GetEllapsedTime(Game game)
         {
-            TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
+            TimeSpan ellapsedTime = game.GameClock.EllapsedPeriodTimeAtLastClockStop;
             if (game.GameClock.IsClockRunning)
             {
                 //int lastStopPeriod = 
@@ -196,10 +279,11 @@ namespace BasketballStats.Shared.Managers
             return ellapsedTime;
         }
 
+        [Obsolete("Remove this after the tests are updated")]
         public void SetEllapsedTime(Game game, TimeSpan timeSpan)
         {
             game.GameClock.LastClockStartTime = Settings.CurrentTime;
-            game.GameClock.EllapsedTimeAtLastClockStop = timeSpan;
+            game.GameClock.EllapsedPeriodTimeAtLastClockStop = timeSpan;
         }
 
         private int GetPeriodNumber(TimeSpan ellapsedTime, GameSettings gameSettings)
