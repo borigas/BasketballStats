@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using BasketballStats.Shared.Common;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
 using BasketballStats.Shared.Managers;
@@ -13,7 +14,6 @@ namespace UnitTests
     public class GameManagerTests
     {
         const int MS_TO_SLEEP = 50;
-        const int MS_ALLOWABLE_DIFF = 10;
 
         IGameManager _gameManager = null;
 
@@ -26,6 +26,8 @@ namespace UnitTests
         [TestInitialize]
         public void TestInit()
         {
+            Settings.CurrentTime = DateTime.UtcNow;
+
             _gameManager = new GameManager();
 
             _homeTeam = new Team()
@@ -54,7 +56,7 @@ namespace UnitTests
             };
             _gameSettings = new GameSettings()
             {
-                PeriodLengthInMinutes = 8,
+                PeriodLength = TimeSpan.FromMinutes(8),
                 PeriodsInGame = 4,
             };
             _game = _gameManager.CreateGame(_season, _homeTeam, _awayTeam, _gameSettings);
@@ -113,15 +115,16 @@ namespace UnitTests
         {
             // Assign 1st lineup
             var players = _awayTeam.Players.GetRange(2, 5);
-            DateTime now1 = DateTime.UtcNow;
+            DateTime now1 = Settings.CurrentTime;
+            Settings.CurrentTime = now1;
             Lineup lineup1 = _gameManager.AssignLineup(_game.AwayTeam, players);
 
             Assert.IsNotNull(lineup1);
             Assert.IsTrue(players.SequenceEqual(lineup1.Players));
             Assert.AreEqual(_awayTeam, lineup1.Team);
             Assert.AreEqual(_game, lineup1.Game);
-            Assert.IsTrue((lineup1.StartDateTime - now1).TotalMilliseconds < MS_ALLOWABLE_DIFF);
-            Assert.IsTrue((lineup1.EndDateTime - now1).TotalMilliseconds < MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(lineup1.StartDateTime, now1);
+            Assert.AreEqual(lineup1.EndDateTime, now1);
             Assert.AreEqual(TimeSpan.Zero, lineup1.StartGameTime);
 
             Assert.IsNotNull(_game.AwayTeam.Lineups);
@@ -129,11 +132,11 @@ namespace UnitTests
             Assert.AreEqual(lineup1, _game.AwayTeam.Lineups.Last());
 
             _gameManager.StartClock(_game);
-            Thread.Sleep(MS_TO_SLEEP);
+            DateTime now2 = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
+            Settings.CurrentTime = now2;
             _gameManager.StopClock(_game);
 
             // Assign 2nd lineup
-            DateTime now2 = DateTime.UtcNow;
             players = _awayTeam.Players.GetRange(0, 5);
             Lineup lineup2 = _gameManager.AssignLineup(_game.AwayTeam, players);
 
@@ -142,9 +145,9 @@ namespace UnitTests
             Assert.AreEqual(_awayTeam, lineup2.Team);
             Assert.AreEqual(_game, lineup2.Game);
 
-            Assert.IsTrue((lineup2.StartDateTime - now2).TotalMilliseconds < MS_ALLOWABLE_DIFF);
-            Assert.IsTrue((lineup2.EndDateTime - now2).TotalMilliseconds < MS_ALLOWABLE_DIFF);
-            Assert.AreEqual(MS_TO_SLEEP, lineup2.StartGameTime.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(lineup2.StartDateTime, now2);
+            Assert.AreEqual(lineup2.EndDateTime, now2);
+            Assert.AreEqual(MS_TO_SLEEP, lineup2.StartGameTime.TotalMilliseconds);
 
             Assert.AreEqual(lineup2.StartGameTime, lineup1.EndGameTime);
             Assert.AreEqual(lineup2.StartDateTime, lineup1.EndDateTime);
@@ -184,22 +187,22 @@ namespace UnitTests
 
             _gameManager.StartClock(_game);
 
-            Thread.Sleep(MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
 
             TimeSpan ellapsedTime1 = _gameManager.GetEllapsedTime(_game);
-            Assert.AreEqual(MS_TO_SLEEP, ellapsedTime1.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(MS_TO_SLEEP, ellapsedTime1.TotalMilliseconds);
 
-            Thread.Sleep(MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
 
             TimeSpan ellapsedTime2 = _gameManager.GetEllapsedTime(_game);
-            Assert.AreEqual(MS_TO_SLEEP + ellapsedTime1.TotalMilliseconds, ellapsedTime2.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(MS_TO_SLEEP + ellapsedTime1.TotalMilliseconds, ellapsedTime2.TotalMilliseconds);
 
             _gameManager.StopClock(_game);
 
-            Thread.Sleep(MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
 
             TimeSpan ellapsedTime3 = _gameManager.GetEllapsedTime(_game);
-            Assert.AreEqual(ellapsedTime2.TotalMilliseconds, ellapsedTime3.TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(ellapsedTime2, ellapsedTime3);
         }
 
         [TestMethod]
@@ -208,23 +211,23 @@ namespace UnitTests
             TimeSpan timeToSet = TimeSpan.FromMinutes(1);
             _gameManager.SetEllapsedTime(_game, timeToSet);
 
-            Thread.Sleep(MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
 
             Assert.AreEqual(timeToSet, _gameManager.GetEllapsedTime(_game));
 
             _gameManager.StartClock(_game);
 
-            Thread.Sleep(MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
 
-            Assert.AreEqual(timeToSet.TotalMilliseconds + MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(timeToSet.TotalMilliseconds + MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds);
 
             _gameManager.SetEllapsedTime(_game, timeToSet);
 
-            Assert.AreEqual(timeToSet.TotalMilliseconds, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(timeToSet, _gameManager.GetEllapsedTime(_game));
 
-            Thread.Sleep(2 * MS_TO_SLEEP);
+            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(2 * MS_TO_SLEEP);
 
-            Assert.AreEqual(timeToSet.TotalMilliseconds + 2 * MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds, MS_ALLOWABLE_DIFF);
+            Assert.AreEqual(timeToSet.TotalMilliseconds + 2 * MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds);
         }
     }
 }

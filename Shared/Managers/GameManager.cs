@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BasketballStats.Shared.Common;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
+using BasketballStats.Shared.DataContracts.Db;
 
 namespace BasketballStats.Shared.Managers
 {
@@ -31,7 +33,7 @@ namespace BasketballStats.Shared.Managers
             {
                 IsClockRunning = false,
                 EllapsedTimeAtLastClockStop = TimeSpan.Zero,
-                LastClockStartTime = DateTime.UtcNow,
+                LastClockStartTime = Settings.CurrentTime,
             };
 
             return game;
@@ -69,7 +71,7 @@ namespace BasketballStats.Shared.Managers
                 throw new ArgumentException("players");
             }
 
-            DateTime now = DateTime.UtcNow;
+            DateTime now = Settings.CurrentTime;
             TimeSpan gameTime=GetEllapsedTime(teamGame.Game);
 
             Lineup lineup = new Lineup()
@@ -94,8 +96,35 @@ namespace BasketballStats.Shared.Managers
             return lineup;
         }
 
+        private T CreateGameEvent<T>(TeamGame teamGame) where T : DbGameEvent, new()
+        {
+            DateTime now = Settings.CurrentTime;
+            throw new Exception();
+            TimeSpan gameTime = TimeSpan.Zero;
+            T gameEvent = new T()
+            {
+                Id = Guid.NewGuid(),
+                GameId = teamGame.Game.Id,
+                TeamId = teamGame.Team.Id,
+                CreatedAt = now,
+                CreatedBy = Settings.CurrentUser,
+                UpdatedAt = now,
+                UpdatedBy = Settings.CurrentUser,
+                StartDateTime = now,
+                EndDateTime = now,
+                StartGameTime = gameTime,
+                EndGameTime = gameTime,
+                
+            };
+            return gameEvent;
+        }
+
         public StatResult<Stat> AddStat(TeamGame game, Player player, string statName)
         {
+            Stat stat = new Stat()
+            {
+                
+            };
             throw new NotImplementedException();
         }
 
@@ -111,7 +140,7 @@ namespace BasketballStats.Shared.Managers
 
         public void StartClock(Game game)
         {
-            DateTime now = DateTime.UtcNow;
+            DateTime now = Settings.CurrentTime;
 
             game.GameClock.IsClockRunning = true;
             game.GameClock.LastClockStartTime = now;
@@ -128,7 +157,13 @@ namespace BasketballStats.Shared.Managers
             TimeSpan ellapsedTime = game.GameClock.EllapsedTimeAtLastClockStop;
             if (game.GameClock.IsClockRunning)
             {
-                var runningTime = DateTime.UtcNow - game.GameClock.LastClockStartTime;
+                //int lastStopPeriod = 
+                    //GetPeriodNumber(game.GameClock.EllapsedTimeAtLastClockStop, game.GameSettings);
+
+                //throw new NotImplementedException();
+                //TimeSpan maxEllapsedTime = (lastStopPeriod + 1);
+
+                var runningTime = Settings.CurrentTime - game.GameClock.LastClockStartTime;
                 ellapsedTime += runningTime;
             }
             return ellapsedTime;
@@ -136,8 +171,13 @@ namespace BasketballStats.Shared.Managers
 
         public void SetEllapsedTime(Game game, TimeSpan timeSpan)
         {
-            game.GameClock.LastClockStartTime = DateTime.UtcNow;
+            game.GameClock.LastClockStartTime = Settings.CurrentTime;
             game.GameClock.EllapsedTimeAtLastClockStop = timeSpan;
+        }
+
+        public int GetPeriodNumber(TimeSpan ellapsedTime, GameSettings gameSettings){
+            double period = ellapsedTime.TotalMilliseconds / gameSettings.PeriodLength.TotalMilliseconds;
+            return (int)period;
         }
     }
 }
