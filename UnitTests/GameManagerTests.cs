@@ -12,8 +12,6 @@ namespace UnitTests
     [TestClass]
     public class GameManagerTests
     {
-        const int MS_TO_SLEEP = 50000;
-
         IGameManager _gameManager = null;
 
         Team _homeTeam = null;
@@ -132,7 +130,8 @@ namespace UnitTests
             Assert.AreEqual(lineup1, _game.AwayTeam.Lineups.Last());
 
             _gameManager.StartClock(_game);
-            DateTime now2 = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
+            TimeSpan timeToRun = TimeSpan.FromMinutes(1);
+            DateTime now2 = Settings.CurrentTime.Add(timeToRun);
             Settings.CurrentTime = now2;
             _gameManager.StopClock(_game);
 
@@ -147,7 +146,7 @@ namespace UnitTests
 
             Assert.AreEqual(lineup2.StartDateTime, now2);
             Assert.AreEqual(lineup2.EndDateTime, now2);
-            Assert.AreEqual(MS_TO_SLEEP, lineup2.StartGameTime.TotalMilliseconds);
+            Assert.AreEqual(timeToRun, lineup2.StartGameTime);
 
             Assert.AreEqual(lineup2.StartGameTime, lineup1.EndGameTime);
             Assert.AreEqual(lineup2.StartDateTime, lineup1.EndDateTime);
