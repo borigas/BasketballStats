@@ -23,11 +23,9 @@ namespace BasketballStats.Shared.Contracts
 
         void StopClock(Game game);
 
-        TimeSpan GetEllapsedTime(Game game);
         GameTime GetGameTime(Game game);
 
-        void SetEllapsedTime(Game game, TimeSpan timeSpan);
-        void SetGameTime(Game game, GameTime gameTime);
+        void SetEllapsedTime(Game game, int periodIndex, TimeSpan timeSpan);
 
         void AdvancePeriod(Game game);
     }

@@ -269,26 +269,52 @@ namespace UnitTests
         [TestMethod]
         public void GameManager_SetTime()
         {
+            int periodIndex = 2;
             TimeSpan timeToSet = TimeSpan.FromMinutes(1);
-            _gameManager.SetEllapsedTime(_game, timeToSet);
+            _gameManager.SetEllapsedTime(_game, periodIndex, timeToSet);
 
-            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
+            // Time is set properly
+            GameTime gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet, gameTime.PeriodEllapsedTime);
 
-            Assert.AreEqual(timeToSet, _gameManager.GetEllapsedTime(_game));
+            // Clock isn't started by setting the clock
+            Settings.CurrentTime = Settings.CurrentTime.AddHours(1);
 
+            gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet, gameTime.PeriodEllapsedTime);
+
+            // Clock can run after setting time
             _gameManager.StartClock(_game);
 
-            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(MS_TO_SLEEP);
+            TimeSpan timeToRun = TimeSpan.FromMinutes(1);
+            Settings.CurrentTime = Settings.CurrentTime.Add(timeToRun);
 
-            Assert.AreEqual(timeToSet.TotalMilliseconds + MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds);
+            gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet + timeToRun, gameTime.PeriodEllapsedTime);
 
-            _gameManager.SetEllapsedTime(_game, timeToSet);
+            // Clock can be set while running
+            timeToSet = TimeSpan.FromMinutes(3);
+            _gameManager.SetEllapsedTime(_game, periodIndex, timeToSet);
 
-            Assert.AreEqual(timeToSet, _gameManager.GetEllapsedTime(_game));
+            gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet, gameTime.PeriodEllapsedTime);
 
-            Settings.CurrentTime = Settings.CurrentTime.AddMilliseconds(2 * MS_TO_SLEEP);
+            // Clock isn't stopped by setting a time
+            Settings.CurrentTime = Settings.CurrentTime.Add(timeToRun);
+            gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet + timeToRun, gameTime.PeriodEllapsedTime);
 
-            Assert.AreEqual(timeToSet.TotalMilliseconds + 2 * MS_TO_SLEEP, _gameManager.GetEllapsedTime(_game).TotalMilliseconds);
+            // Clock can be set backwards
+            periodIndex = 0;
+            _gameManager.SetEllapsedTime(_game, periodIndex, timeToSet);
+            gameTime = _gameManager.GetGameTime(_game);
+            Assert.AreEqual(periodIndex, gameTime.PeriodIndex);
+            Assert.AreEqual(timeToSet, gameTime.PeriodEllapsedTime);
         }
     }
 }
