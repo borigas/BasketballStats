@@ -4,6 +4,7 @@ using System.Linq;
 using BasketballStats.Shared.Common;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
+using BasketballStats.Shared.DataContracts.Exceptions;
 using BasketballStats.Shared.Managers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -69,7 +70,10 @@ namespace UnitTests
         [TestMethod]
         public void GameManager_AssignLineup()
         {
-            // Assign 1st lineup
+            // Assign 1st lineups
+            _gameManager.AssignLineup(_game.HomeTeam, _homeTeam.Players.GetRange(0, 5));
+            Assert.AreEqual(1, _game.HomeTeam.Lineups.Count, "Home team should have a lineup");
+
             var players = _awayTeam.Players.GetRange(2, 5);
             DateTime now1 = Settings.CurrentTime;
             Settings.CurrentTime = now1;
@@ -113,7 +117,7 @@ namespace UnitTests
             Assert.AreEqual(2, _game.AwayTeam.Lineups.Count);
             Assert.AreEqual(lineup2, _game.AwayTeam.Lineups.Last());
 
-            Assert.AreEqual(0, _game.HomeTeam.Lineups.Count, "Home team lineups should not be affected by away team");
+            Assert.AreEqual(1, _game.HomeTeam.Lineups.Count, "Home team lineups should not be affected by away team");
         }
 
         [TestMethod]
@@ -137,5 +141,11 @@ namespace UnitTests
             Lineup lineup = _gameManager.AssignLineup(_game.AwayTeam, players);
         }
 
+        [ExpectedException(typeof(LineupNotAssignedException))]
+        [TestMethod]
+        public void GameManager_StartClockWithoutLineup()
+        {
+            _gameManager.StartClock(_game);
+        }
     }
 }

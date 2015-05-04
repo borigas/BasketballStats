@@ -7,7 +7,8 @@ using BasketballStats.Shared.DataContracts.Db;
 
 namespace BasketballStats.Shared.DataContracts
 {
-    public class Possession : DbGameEvent
+    public class StatType : DbStatType
     {
+        public List<StatType> DependentStats { get; set; }
     }
 }

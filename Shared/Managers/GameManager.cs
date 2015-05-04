@@ -7,6 +7,7 @@ using BasketballStats.Shared.Common;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
 using BasketballStats.Shared.DataContracts.Db;
+using BasketballStats.Shared.DataContracts.Exceptions;
 using BasketballStats.Shared.Engines;
 
 namespace BasketballStats.Shared.Managers
@@ -16,6 +17,11 @@ namespace BasketballStats.Shared.Managers
         private IGameClockEngine GameClockEngine
         {
             get { return new GameClockEngine(); }
+        }
+
+        private IGameStatEngine GameStatEngine
+        {
+            get { return new GameStatEngine(); }
         }
 
         public Game CreateGame(Season season, Team homeTeam, Team awayTeam, GameSettings gameSettings)
@@ -102,35 +108,8 @@ namespace BasketballStats.Shared.Managers
             return lineup;
         }
 
-        private T CreateGameEvent<T>(TeamGame teamGame) where T : DbGameEvent, new()
+        public StatResult<Stat> AddStat(TeamGame teamGame, Player player, string statName)
         {
-            DateTime now = Settings.CurrentTime;
-            throw new Exception();
-            TimeSpan gameTime = TimeSpan.Zero;
-            T gameEvent = new T()
-            {
-                Id = Guid.NewGuid(),
-                GameId = teamGame.Game.Id,
-                TeamId = teamGame.Team.Id,
-                CreatedAt = now,
-                CreatedBy = Settings.CurrentUser,
-                UpdatedAt = now,
-                UpdatedBy = Settings.CurrentUser,
-                StartDateTime = now,
-                EndDateTime = now,
-                StartGameTime = gameTime,
-                EndGameTime = gameTime,
-
-            };
-            return gameEvent;
-        }
-
-        public StatResult<Stat> AddStat(TeamGame game, Player player, string statName)
-        {
-            Stat stat = new Stat()
-            {
-
-            };
             throw new NotImplementedException();
         }
 
@@ -146,6 +125,14 @@ namespace BasketballStats.Shared.Managers
 
         public void StartClock(Game game)
         {
+            if (!game.AwayTeam.Lineups.Any())
+            {
+                throw new LineupNotAssignedException();
+            }
+            if (!game.HomeTeam.Lineups.Any())
+            {
+                throw new LineupNotAssignedException();
+            }
             GameClockEngine.StartClock(game);
         }
 

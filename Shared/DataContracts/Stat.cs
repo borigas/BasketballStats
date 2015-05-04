@@ -9,9 +9,11 @@ namespace BasketballStats.Shared.DataContracts
 {
     public class Stat : DbStat
     {
+        public Team Team { get; set; }
+        public Game Game { get; set; }
+
         public Possession Possession { get; set; }
         public Lineup Lineup { get; set; }
-        public Team Team { get; set; }
         public Player Player { get; set; }
     }
 }

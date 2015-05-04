@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BasketballStats.Shared.DataContracts.Db;
 
-namespace BasketballStats.Shared.DataContracts
+namespace BasketballStats.Shared.DataContracts.Exceptions
 {
-    public class Possession : DbGameEvent
+    public class LineupNotAssignedException : Exception
     {
     }
 }
