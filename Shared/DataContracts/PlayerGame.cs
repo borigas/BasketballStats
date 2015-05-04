@@ -7,7 +7,7 @@ using BasketballStats.Shared.DataContracts.Interfaces;
 
 namespace BasketballStats.Shared.DataContracts
 {
-    public class PlayerGame : IStatSummary
+    public class PlayerGame : IStatsSummary
     {
         public Player Player { get; set; }
         public Game Game { get; set; }

@@ -31,11 +31,9 @@ namespace UnitTests
         [TestMethod]
         public void GameStatEngine_AddStat()
         {
+            Settings.CurrentTime = DateTime.Now.Date;
+
             Player player = _homeTeam.Players.First();
-            GameTime gameTime = new GameTime()
-            {
-                TotalEllapsedTime = TimeSpan.FromMinutes(1),
-            };
             StatType statType = new StatType()
             {
                 Id = Guid.NewGuid(),
@@ -46,12 +44,18 @@ namespace UnitTests
             };
             var possession = new Possession()
             {
-                TeamId = _homeTeam.Id,
+                TeamId = _awayTeam.Id,
                 GameId = _game.Id,
+                StartDateTime = Settings.CurrentTime,
+                StartGameTime = TimeSpan.Zero,
             };
             _game.Possessions.Add(possession);
-
-            Settings.CurrentTime = Settings.CurrentTime.Add(TimeSpan.FromMinutes(1));
+            
+            GameTime gameTime = new GameTime()
+            {
+                TotalEllapsedTime = TimeSpan.FromMinutes(1),
+            };
+            Settings.CurrentTime = Settings.CurrentTime.Add(gameTime.TotalEllapsedTime);
 
             StatResult<Stat> statResult = _gameStatEngine.AddStat(_game.HomeTeam, player, gameTime, statType);
 
@@ -75,10 +79,23 @@ namespace UnitTests
             Assert.AreEqual(1, playerGame.StatSummaries[stat.StatTypeId].StatCount);
             Assert.AreEqual(statType.StatName, playerGame.StatSummaries[stat.StatTypeId].StatName);
 
-            // TODO Check team stats got implemented correctly
+            // Check team stats got implemented correctly
+            TeamGame teamGame = _game.HomeTeam;
+            Assert.AreEqual(1, teamGame.StatSummaries.Count);
+            Assert.AreEqual(1, teamGame.StatSummaries[stat.StatTypeId].StatCount);
+            Assert.AreEqual(statType.StatName, teamGame.StatSummaries[stat.StatTypeId].StatName);
 
-            // TODO Check that possession was incremented if necessary
-            //      Check that start/end of possession is correct
+
+            // Check that a new possession was added
+            Assert.AreEqual(Settings.CurrentTime, possession.EndDateTime);
+            Assert.AreEqual(gameTime.TotalEllapsedTime, possession.EndGameTime);
+            Assert.AreEqual(2, _game.Possessions.Count);
+
+            Possession nextPossession = _game.Possessions.Last();
+            Assert.AreEqual(Settings.CurrentTime, nextPossession.StartDateTime);
+            Assert.AreEqual(gameTime.TotalEllapsedTime, nextPossession.StartGameTime);
+            Assert.AreEqual(_homeTeam.Id, nextPossession.TeamId);
+            Assert.AreEqual(_game.Id, nextPossession.GameId);
         }
 
         // TODO Support for stat before a possession is created

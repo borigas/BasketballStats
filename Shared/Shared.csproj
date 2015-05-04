@@ -56,12 +56,13 @@
     <Compile Include="DataContracts\Db\DbPossession.cs" />
     <Compile Include="DataContracts\Exceptions\LineupNotAssignedException.cs" />
     <Compile Include="DataContracts\Exceptions\PlayerGameNotFoundException.cs" />
+    <Compile Include="DataContracts\Exceptions\PossessionNotAssignedException.cs" />
     <Compile Include="DataContracts\Foul.cs" />
     <Compile Include="DataContracts\Game.cs" />
     <Compile Include="DataContracts\GameClock.cs" />
     <Compile Include="DataContracts\GameSettings.cs" />
     <Compile Include="DataContracts\GameTime.cs" />
-    <Compile Include="DataContracts\Interfaces\IStatSummary.cs" />
+    <Compile Include="DataContracts\Interfaces\IStatsSummary.cs" />
     <Compile Include="DataContracts\Lineup.cs" />
     <Compile Include="DataContracts\Player.cs" />
     <Compile Include="DataContracts\PlayerGame.cs" />

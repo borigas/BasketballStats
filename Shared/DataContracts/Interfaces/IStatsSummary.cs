@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasketballStats.Shared.DataContracts.Interfaces
 {
-    public interface IStatSummary
+    public interface IStatsSummary
     {
         Dictionary<Guid, StatSummary> StatSummaries { get; set; }
         Dictionary<Guid, ShotTypeSummary> ShotTypeSummaries { get; set; }

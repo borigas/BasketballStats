@@ -8,6 +8,7 @@ using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
 using BasketballStats.Shared.DataContracts.Db;
 using BasketballStats.Shared.DataContracts.Exceptions;
+using BasketballStats.Shared.DataContracts.Interfaces;
 
 namespace BasketballStats.Shared.Engines
 {
@@ -32,6 +33,22 @@ namespace BasketballStats.Shared.Engines
                 EndGameTime = gameTime.TotalEllapsedTime,
             };
             return gameEvent;
+        }
+
+        private void AddStatSummary(IStatsSummary statsSummary, Stat stat)
+        {
+            StatSummary currentStatSummary;
+            if (!statsSummary.StatSummaries.TryGetValue(stat.StatTypeId, out currentStatSummary))
+            {
+                currentStatSummary = new StatSummary()
+                {
+                    StatTypeId = stat.StatTypeId,
+                    StatName = stat.StatName,
+                    StatCount = 0,
+                };
+                statsSummary.StatSummaries[currentStatSummary.StatTypeId] = currentStatSummary;
+            }
+            currentStatSummary.StatCount++;
         }
 
         public StatResult<Stat> AddStat(TeamGame teamGame, Player player, GameTime gameTime, StatType statType)
@@ -60,23 +77,19 @@ namespace BasketballStats.Shared.Engines
                 stat.PossessionId = stat.Possession.Id;
             }
 
+            AddStatSummary(teamGame, stat);
+
             PlayerGame playerGame = teamGame.Players.FirstOrDefault(teamPlayer => teamPlayer.Player == player);
             if (playerGame == null)
             {
                 throw new PlayerGameNotFoundException();
             }
-            StatSummary playerSummary;
-            if (!playerGame.StatSummaries.TryGetValue(statType.Id, out playerSummary))
+            AddStatSummary(playerGame, stat);
+
+            if (statType.WillEndPossession)
             {
-                playerSummary = new StatSummary()
-                {
-                    StatTypeId = statType.Id,
-                    StatName = statType.StatName,
-                    StatCount = 0,
-                };
-                playerGame.StatSummaries[playerSummary.StatTypeId] = playerSummary;
+                ChangePossession(teamGame.Game, gameTime);
             }
-            playerSummary.StatCount++;
 
             StatResult<Stat> result = new StatResult<Stat>()
             {
@@ -94,6 +107,43 @@ namespace BasketballStats.Shared.Engines
         public StatResult<Shot> AddShot(TeamGame game, Shot shot, GameTime gameTime)
         {
             throw new NotImplementedException();
+        }
+
+        public Possession ChangePossession(Game game, GameTime gameTime)
+        {
+            if (!game.Possessions.Any())
+            {
+                throw new PossessionNotAssignedException();
+            }
+            Possession currentPossession = game.Possessions.Last();
+
+            TeamGame newPossessionTeam;
+            if (currentPossession.TeamId == game.HomeTeamId)
+            {
+                newPossessionTeam = game.AwayTeam;
+            }
+            else
+            {
+                newPossessionTeam = game.HomeTeam;
+            }
+
+            return AssignPossession(game, newPossessionTeam, gameTime);
+        }
+
+        public Possession AssignPossession(Game game, TeamGame teamGame, GameTime gameTime)
+        {
+            Possession possession = CreateGameEvent<Possession>(teamGame, gameTime);
+
+            Possession lastPossession = game.Possessions.LastOrDefault();
+            if (lastPossession != null)
+            {
+                lastPossession.EndDateTime = possession.StartDateTime;
+                lastPossession.EndGameTime = possession.StartGameTime;
+            }
+
+            game.Possessions.Add(possession);
+
+            return possession;
         }
     }
 }
