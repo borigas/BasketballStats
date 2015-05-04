@@ -12,8 +12,8 @@ namespace BasketballStats.Shared.DataContracts
         public Player Player { get; set; }
         public Game Game { get; set; }
 
-        public List<StatSummary> StatSummary { get; set; }
-        public List<ShotTypeSummary> ShotTypeSummaries { get; set; }
+        public Dictionary<Guid, StatSummary> StatSummaries { get; set; }
+        public Dictionary<Guid, ShotTypeSummary> ShotTypeSummaries { get; set; }
         public List<Foul> Fouls { get; set; }
     }
 }

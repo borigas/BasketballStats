@@ -8,8 +8,8 @@ namespace BasketballStats.Shared.DataContracts.Interfaces
 {
     public interface IStatSummary
     {
-        List<StatSummary> StatSummary { get; set; }
-        List<ShotTypeSummary> ShotTypeSummaries { get; set; }
+        Dictionary<Guid, StatSummary> StatSummaries { get; set; }
+        Dictionary<Guid, ShotTypeSummary> ShotTypeSummaries { get; set; }
         List<Foul> Fouls { get; set; }
     }
 }

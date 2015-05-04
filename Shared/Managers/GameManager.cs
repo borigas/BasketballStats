@@ -59,8 +59,8 @@ namespace BasketballStats.Shared.Managers
                 Team = team,
                 Lineups = new List<Lineup>(),
                 Fouls = new List<Foul>(),
-                ShotTypeSummaries = new List<ShotTypeSummary>(),
-                StatSummary = new List<StatSummary>(),
+                ShotTypeSummaries = new Dictionary<Guid,ShotTypeSummary>(),
+                StatSummaries = new Dictionary<Guid,StatSummary>(),
             };
 
             teamGame.Players = team.Players.Select(player => new PlayerGame()
@@ -68,8 +68,8 @@ namespace BasketballStats.Shared.Managers
                 Fouls = new List<Foul>(),
                 Game = game,
                 Player = player,
-                ShotTypeSummaries = new List<ShotTypeSummary>(),
-                StatSummary = new List<StatSummary>()
+                ShotTypeSummaries = new Dictionary<Guid, ShotTypeSummary>(),
+                StatSummaries = new Dictionary<Guid, StatSummary>(),
             }).ToList();
 
             return teamGame;

@@ -58,16 +58,24 @@ namespace UnitTests
             Assert.AreEqual(statType.DependentStats, statResult.DependentStats);
 
             Stat stat = statResult.Stat;
+            Assert.AreNotEqual(Guid.Empty, stat.Id);
             Assert.AreEqual(statType.StatName, stat.StatName);
+            Assert.AreEqual(statType.Id, stat.StatTypeId);
 
+            // Check that the returned stat was created properly
             Assert.AreEqual(player, stat.Player);
             Assert.AreEqual(_homeTeam, stat.Team);
             Assert.AreEqual(_game, stat.Game);
             Assert.AreEqual(_game.HomeTeam.Lineups.Last(), stat.Lineup);
             Assert.AreEqual(possession, stat.Possession);
 
+            // Check that the player's stats were incremented properly
+            PlayerGame playerGame = _game.HomeTeam.Players.FirstOrDefault(plyr => plyr.Player == player);
+            Assert.AreEqual(1, playerGame.StatSummaries.Count);
+            Assert.AreEqual(1, playerGame.StatSummaries[stat.StatTypeId].StatCount);
+            Assert.AreEqual(statType.StatName, playerGame.StatSummaries[stat.StatTypeId].StatName);
 
-            // TODO Check player and team stats got implemented correctly
+            // TODO Check team stats got implemented correctly
 
             // TODO Check that possession was incremented if necessary
             //      Check that start/end of possession is correct

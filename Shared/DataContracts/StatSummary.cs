@@ -8,6 +8,7 @@ namespace BasketballStats.Shared.DataContracts
 {
     public class StatSummary
     {
+        public Guid StatTypeId { get; set; }
         public string StatName { get; set; }
         public int StatCount { get; set; }
     }

@@ -11,6 +11,7 @@ namespace BasketballStats.Shared.DataContracts.Db
         public Guid PossessionId { get; set; }
         public Guid LineupId { get; set; }
         public Guid? PlayerId { get; set; }
+        public Guid StatTypeId { get; set; }
         public string StatName { get; set; }
         public Guid StatEventLink { get; set; }
     }

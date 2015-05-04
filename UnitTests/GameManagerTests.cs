@@ -54,7 +54,7 @@ namespace UnitTests
             Assert.AreEqual(team.Players.Count, teamGame.Players.Count);
             for (var i = 0; i < team.Players.Count; i++)
             {
-                Assert.IsNotNull(teamGame.Players[i].StatSummary);
+                Assert.IsNotNull(teamGame.Players[i].StatSummaries);
                 Assert.IsNotNull(teamGame.Players[i].ShotTypeSummaries);
                 Assert.IsNotNull(teamGame.Players[i].Fouls);
 
@@ -64,7 +64,7 @@ namespace UnitTests
             Assert.IsNotNull(teamGame.Fouls);
             Assert.IsNotNull(teamGame.Lineups);
             Assert.IsNotNull(teamGame.ShotTypeSummaries);
-            Assert.IsNotNull(teamGame.StatSummary);
+            Assert.IsNotNull(teamGame.StatSummaries);
         }
 
         [TestMethod]

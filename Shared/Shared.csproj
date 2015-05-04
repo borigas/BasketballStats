@@ -55,6 +55,7 @@
     <Compile Include="DataContracts\Db\DbPlayer.cs" />
     <Compile Include="DataContracts\Db\DbPossession.cs" />
     <Compile Include="DataContracts\Exceptions\LineupNotAssignedException.cs" />
+    <Compile Include="DataContracts\Exceptions\PlayerGameNotFoundException.cs" />
     <Compile Include="DataContracts\Foul.cs" />
     <Compile Include="DataContracts\Game.cs" />
     <Compile Include="DataContracts\GameClock.cs" />
