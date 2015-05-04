@@ -15,5 +15,7 @@ namespace BasketballStats.Shared.Contracts
         StatResult<Stat> AddDependentStat(Stat parentStat, TeamGame game, Player player, GameTime gameTime, StatType statType);
 
         StatResult<Shot> AddShot(TeamGame game, Shot shot, GameTime gameTime);
+
+        Possession AssignPossession(Game game, TeamGame teamGame, GameTime gameTime);
     }
 }

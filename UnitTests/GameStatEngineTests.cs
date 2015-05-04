@@ -42,20 +42,11 @@ namespace UnitTests
                 RequiresParentStat = false,
                 DependentStats = new List<StatType>(),
             };
-            var possession = new Possession()
-            {
-                TeamId = _awayTeam.Id,
-                GameId = _game.Id,
-                StartDateTime = Settings.CurrentTime,
-                StartGameTime = TimeSpan.Zero,
-            };
-            _game.Possessions.Add(possession);
+            GameTime gameTime = _gameManager.GetGameTime(_game);
+            var possession = _gameStatEngine.AssignPossession(_game, _game.AwayTeam, gameTime);
             
-            GameTime gameTime = new GameTime()
-            {
-                TotalEllapsedTime = TimeSpan.FromMinutes(1),
-            };
             Settings.CurrentTime = Settings.CurrentTime.Add(gameTime.TotalEllapsedTime);
+            gameTime = _gameManager.GetGameTime(_game);
 
             StatResult<Stat> statResult = _gameStatEngine.AddStat(_game.HomeTeam, player, gameTime, statType);
 
@@ -100,7 +91,8 @@ namespace UnitTests
 
         // TODO Support for stat before a possession is created
         // TODO Support team stat without a player
-        // TODO Support stat with 2 players? Jump ball
+        // TODO Support stat with 2 players? Ex. Jump ball
         //      Maybe implement as a jump ball with a 2nd jump ball as a dependent stat
+        // TODO Support stats only being available to offense/defense
     }
 }
