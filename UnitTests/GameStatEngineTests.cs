@@ -115,6 +115,66 @@ namespace UnitTests
             _gameStatEngine.AddStat(_game.HomeTeam, _game.AwayTeam.Players.First().Player, new GameTime(), new StatType());
         }
 
+        [TestMethod]
+        public void GameStatEngine_AddDependantStat()
+        {
+            GameTime gameTime = _gameManager.GetGameTime(_game);
+            var possession = _gameStatEngine.AssignPossession(_game, _game.AwayTeam, gameTime);
+
+            Player turnoverPlayer = _awayTeam.Players.First();
+            Player stealPlayer = _homeTeam.Players.First();
+            StatType turnoverStatType = new StatType()
+            {
+                Id = Guid.NewGuid(),
+                StatName = "Turnover",
+                WillEndPossession = true,
+                RequiresParentStat = false,
+                DependentStats = new List<StatType>(),
+            };
+            StatType stealStatType = new StatType()
+            {
+                Id = Guid.NewGuid(),
+                StatName = "Steal",
+                WillEndPossession = false,
+                RequiresParentStat = true,
+                DependentStats = new List<StatType>(),
+            };
+            turnoverStatType.DependentStats.Add(turnoverStatType);
+
+            Settings.CurrentTime = Settings.CurrentTime.Add(gameTime.TotalEllapsedTime);
+            gameTime = _gameManager.GetGameTime(_game);
+
+            StatResult<Stat> turnoverStatResult = _gameStatEngine.AddStat(_game.AwayTeam, turnoverPlayer, gameTime, turnoverStatType);
+
+            StatResult<Stat> stealStatResult = _gameStatEngine.AddDependentStat(turnoverStatResult.Stat, _game.HomeTeam, stealPlayer, gameTime, stealStatType);
+
+            Assert.AreEqual(turnoverStatType.DependentStats, turnoverStatResult.DependentStats);
+
+            Stat stat = stealStatResult.Stat;
+            Assert.AreNotEqual(Guid.Empty, stat.Id);
+            Assert.AreEqual(stealStatType.StatName, stat.StatName);
+            Assert.AreEqual(stealStatType.Id, stat.StatTypeId);
+
+            // Check that the returned stat was created properly
+            Assert.AreEqual(stealPlayer, stat.Player);
+            Assert.AreEqual(_homeTeam, stat.Team);
+            Assert.AreEqual(_game, stat.Game);
+            Assert.AreEqual(_game.HomeTeam.Lineups.Last(), stat.Lineup);
+            Assert.AreEqual(possession, stat.Possession);
+
+            // Check that the player's stats were incremented properly
+            PlayerGame playerGame = _game.HomeTeam.Players.FirstOrDefault(plyr => plyr.Player == stealPlayer);
+            Assert.AreEqual(1, playerGame.StatSummaries.Count);
+            Assert.AreEqual(1, playerGame.StatSummaries[stat.StatTypeId].StatCount);
+            Assert.AreEqual(stealStatType.StatName, playerGame.StatSummaries[stat.StatTypeId].StatName);
+
+            // Check team stats got implemented correctly
+            TeamGame teamGame = _game.HomeTeam;
+            Assert.AreEqual(1, teamGame.StatSummaries.Count);
+            Assert.AreEqual(1, teamGame.StatSummaries[stat.StatTypeId].StatCount);
+            Assert.AreEqual(stealStatType.StatName, teamGame.StatSummaries[stat.StatTypeId].StatName);
+        }
+
         // TODO Support for stat before a possession is created
         // TODO Support team stat without a player
         // TODO Support stat with 2 players? Ex. Jump ball
