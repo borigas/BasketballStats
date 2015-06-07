@@ -7,6 +7,7 @@ using BasketballStats.Shared.Common;
 using BasketballStats.Shared.Contracts;
 using BasketballStats.Shared.DataContracts;
 using BasketballStats.Shared.DataContracts.Db;
+using BasketballStats.Shared.DataContracts.Exceptions;
 using BasketballStats.Shared.Engines;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,13 +27,24 @@ namespace UnitTests
             _gameManager.AssignLineup(_game.AwayTeam, _awayTeam.Players.Take(5).ToList());
 
             _gameStatEngine = new GameStatEngine();
+
+            Settings.CurrentTime = DateTime.Now.Date;
+        }
+
+        [TestMethod]
+        public void GameStatEngine_AssignPossession()
+        {
+            GameTime gameTime = _gameManager.GetGameTime(_game);
+            var possession = _gameStatEngine.AssignPossession(_game, _game.AwayTeam, gameTime);
+
+            Assert.IsNotNull(_game.Possessions);
+            Assert.AreEqual(possession, _game.Possessions.LastOrDefault());
+            Assert.AreEqual(_game.AwayTeam.Team.Id, possession.TeamId);
         }
 
         [TestMethod]
         public void GameStatEngine_AddStat()
         {
-            Settings.CurrentTime = DateTime.Now.Date;
-
             Player player = _homeTeam.Players.First();
             StatType statType = new StatType()
             {
@@ -44,7 +56,7 @@ namespace UnitTests
             };
             GameTime gameTime = _gameManager.GetGameTime(_game);
             var possession = _gameStatEngine.AssignPossession(_game, _game.AwayTeam, gameTime);
-            
+
             Settings.CurrentTime = Settings.CurrentTime.Add(gameTime.TotalEllapsedTime);
             gameTime = _gameManager.GetGameTime(_game);
 
@@ -87,6 +99,20 @@ namespace UnitTests
             Assert.AreEqual(gameTime.TotalEllapsedTime, nextPossession.StartGameTime);
             Assert.AreEqual(_homeTeam.Id, nextPossession.TeamId);
             Assert.AreEqual(_game.Id, nextPossession.GameId);
+        }
+
+        [ExpectedException(typeof(PlayerGameNotFoundException))]
+        [TestMethod]
+        public void GameStatEngine_AddStat_InvalidPlayer()
+        {
+            _gameStatEngine.AddStat(_game.HomeTeam, new Player(), new GameTime(), new StatType());
+        }
+
+        [ExpectedException(typeof(PlayerGameNotFoundException))]
+        [TestMethod]
+        public void GameStatEngine_AddStat_PlayerFromWrongTeam()
+        {
+            _gameStatEngine.AddStat(_game.HomeTeam, _game.AwayTeam.Players.First().Player, new GameTime(), new StatType());
         }
 
         // TODO Support for stat before a possession is created
